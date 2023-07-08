@@ -1,0 +1,53 @@
+---
+title: "Muthukrishnan"
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+Hey there, fellow adventurers! Welcome to my corner of this research notebook. I'm Muthukrishnan, your friendly neighborhood software engineer.
+
+I thrive on curiosity and a thirst for knowledge, constantly seeking new experiences and learning opportunities. Whether it's diving into the depths of a gripping novel or immersing myself in the vibrant world of coding, I find joy in expanding my horizons.
+
+As a tech enthusiast, I'm constantly amazed by the boundless possibilities it brings. From tinkering with gadgets to exploring the ever-evolving world of AI, I'm enthralled by the exciting intersection of humanity and innovation.
+
+If you ask me my favorite miracles, it would be the Euler's Identity and the Butterfly curve.
+
+**Euler's Identity**
+\begin{gather*}
+e^{i\pi }+1=0
+\end{gather*}
+
+**Butterfly curve** 
+\begin{gather*}
+{\displaystyle x=\sin t\!\left(e^{\cos t}-2\cos 4t-\sin ^{5}\!{\Big (}{t \over 12}{\Big )}\right)} 
+\end{gather*}
+
+\begin{gather*}
+{\displaystyle y=\cos t\!\left(e^{\cos t}-2\cos 4t-\sin ^{5}\!{\Big (}{t \over 12}{\Big )}\right)}
+\end{gather*}
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parameterize the butterfly curve equation
+t = np.linspace(0, 2 * np.pi, 1000)
+x = np.sin(t) * (np.exp(np.cos(t)) - 2 * np.cos(4 * t) - np.sin(t / 12) ** 5)
+y = np.cos(t) * (np.exp(np.cos(t)) - 2 * np.cos(4 * t) - np.sin(t / 12) ** 5)
+
+# Plot the butterfly curve
+plt.plot(x, y, color='red', linewidth=1)
+plt.title("Butterfly curve")
+plt.axis('equal')
+
+# Display the plot
+plt.show()
+```
+
+So, dear reader, join me on this thrilling journey as we navigate through the twists and turns of life. Together, let's discover new passions, celebrate the extraordinary, and revel in the joy of being wonderfully unique.
+
+Fasten your seatbelts, embrace your sense of wonder, and let's embark on an unforgettable adventure together!
+
+I also blog at muthu.co, you can read about the Euler's formula [here](https://muthu.co/deriving-the-famous-eulers-formula-through-taylor-series/)
+

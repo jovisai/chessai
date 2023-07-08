@@ -1,0 +1,19 @@
+project:
+  type: website
+
+website:
+  navbar:
+    left:
+      - href: index.qmd
+  sidebar:
+    style: "floating"
+    search: true
+    contents:
+      - section: "Research Notebooks"
+        contents:
+          - chess_board_segmentation.qmd
+
+format:
+  html:
+    theme: cosmo
+    toc: true

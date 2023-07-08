@@ -14,11 +14,18 @@ To segment the chess board from the environment, I am using a trick by coloring 
 import matplotlib.pyplot as plt
 import cv2
 
-image = cv2.imread('data/IMG_20230706_204254.jpg')
+# image = cv2.imread('data/IMG_20230706_204254.jpg')
+image = cv2.imread('utilities/video_frames/frame_240.jpg')
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+# convert to LAB color space
+lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+
+# Perform Otsu threshold on the A-channel 
+th = cv2.threshold(lab[:,:,1], 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
 # Display the image using Matplotlib
-plt.imshow(image_rgb)
+plt.imshow(th)
 plt.axis('off')
 plt.show()
 ```
@@ -29,22 +36,17 @@ The first step in the segmentation algorithm is to use the red boundary and isol
 import numpy as np
 
 result = image.copy()
-image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
- 
-# lower boundary RED color range values; Hue (0 - 10)
-lower1 = np.array([0, 100, 20])
-upper1 = np.array([10, 255, 255])
- 
-# upper boundary RED color range values; Hue (160 - 180)
-lower2 = np.array([160,100,20])
-upper2 = np.array([179,255,255])
- 
-lower_mask = cv2.inRange(image, lower1, upper1)
-upper_mask = cv2.inRange(image, lower2, upper2)
- 
-full_mask = lower_mask + upper_mask;
- 
-result = cv2.bitwise_and(result, result, mask=full_mask)
+hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+# Define the lower and upper red color thresholds in HSV
+lower_red = np.array([0, 100, 100])
+upper_red = np.array([10, 255, 255])
+
+# Create a mask to filter out red pixels
+mask = cv2.inRange(hsv_image, lower_red, upper_red)
+
+# Apply the mask to the original image
+result = cv2.bitwise_and(image, image, mask=th)
 
 fig, ax = plt.subplots(nrows=1, ncols=2)
 ax[0].set_title('Loaded Sample Image')

@@ -160,6 +160,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
       </ul>
   </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+ <span class="menu-text">Utilities</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./utilities/video_to_images.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Extract Image frames from Video</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
@@ -207,16 +224,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> cv2.imread(<span class="st">'data/IMG_20230706_204254.jpg'</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>image_rgb <span class="op">=</span> cv2.cvtColor(image, cv2.COLOR_BGR2RGB)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the image using Matplotlib</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>plt.imshow(image_rgb)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># image = cv2.imread('data/IMG_20230706_204254.jpg')</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> cv2.imread(<span class="st">'utilities/video_frames/frame_240.jpg'</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>image_rgb <span class="op">=</span> cv2.cvtColor(image, cv2.COLOR_BGR2RGB)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># convert to LAB color space</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>lab <span class="op">=</span> cv2.cvtColor(image, cv2.COLOR_BGR2LAB)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform Otsu threshold on the A-channel </span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>th <span class="op">=</span> cv2.threshold(lab[:,:,<span class="dv">1</span>], <span class="dv">127</span>, <span class="dv">255</span>, cv2.THRESH_BINARY <span class="op">+</span> cv2.THRESH_OTSU)[<span class="dv">1</span>]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the image using Matplotlib</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>plt.imshow(th)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_files/figure-html/cell-2-output-1.png" width="296" height="389"></p>
+<p><img src="chess_board_segmentation_files/figure-html/cell-2-output-1.png" width="227" height="389"></p>
 </div>
 </div>
 <p>The first step in the segmentation algorithm is to use the red boundary and isolate it from the full image.</p>
@@ -226,38 +250,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> image.copy()</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> cv2.cvtColor(image, cv2.COLOR_BGR2HSV)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># lower boundary RED color range values; Hue (0 - 10)</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>lower1 <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">20</span>])</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>upper1 <span class="op">=</span> np.array([<span class="dv">10</span>, <span class="dv">255</span>, <span class="dv">255</span>])</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># upper boundary RED color range values; Hue (160 - 180)</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>lower2 <span class="op">=</span> np.array([<span class="dv">160</span>,<span class="dv">100</span>,<span class="dv">20</span>])</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>upper2 <span class="op">=</span> np.array([<span class="dv">179</span>,<span class="dv">255</span>,<span class="dv">255</span>])</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>lower_mask <span class="op">=</span> cv2.inRange(image, lower1, upper1)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>upper_mask <span class="op">=</span> cv2.inRange(image, lower2, upper2)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>full_mask <span class="op">=</span> lower_mask <span class="op">+</span> upper_mask<span class="op">;</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> cv2.bitwise_and(result, result, mask<span class="op">=</span>full_mask)</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(nrows<span class="op">=</span><span class="dv">1</span>, ncols<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="st">'Loaded Sample Image'</span>)</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].imshow(image_rgb)</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].axis(<span class="st">'off'</span>)</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">'Red Color Segmented'</span>)</span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].imshow(result)</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].axis(<span class="st">'off'</span>)</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the plot</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>hsv_image <span class="op">=</span> cv2.cvtColor(image, cv2.COLOR_BGR2HSV)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the lower and upper red color thresholds in HSV</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>lower_red <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">100</span>])</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>upper_red <span class="op">=</span> np.array([<span class="dv">10</span>, <span class="dv">255</span>, <span class="dv">255</span>])</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a mask to filter out red pixels</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>mask <span class="op">=</span> cv2.inRange(hsv_image, lower_red, upper_red)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the mask to the original image</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> cv2.bitwise_and(image, image, mask<span class="op">=</span>th)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(nrows<span class="op">=</span><span class="dv">1</span>, ncols<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="st">'Loaded Sample Image'</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].imshow(image_rgb)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].axis(<span class="st">'off'</span>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">'Red Color Segmented'</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].imshow(result)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].axis(<span class="st">'off'</span>)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the plot</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_files/figure-html/cell-3-output-1.png" width="662" height="458"></p>
+<p><img src="chess_board_segmentation_files/figure-html/cell-3-output-1.png" width="576" height="470"></p>
 </div>
 </div>
 <p>Let’s break down the core logic of the code step by step:</p>
@@ -310,7 +329,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_files/figure-html/cell-4-output-1.png" width="629" height="950"></p>
+<p><img src="chess_board_segmentation_files/figure-html/cell-4-output-1.png" width="513" height="950"></p>
 </div>
 </div>
 <p>Here is the explanation of the key part of code which does line detection using the Hough transform:</p>
@@ -332,8 +351,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>           extent<span class="op">=</span>[np.rad2deg(theta[<span class="op">-</span><span class="dv">1</span>]), np.rad2deg(theta[<span class="dv">0</span>]), d[<span class="op">-</span><span class="dv">1</span>], d[<span class="dv">0</span>]],</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>           cmap<span class="op">=</span><span class="st">'gray'</span>, aspect<span class="op">=</span><span class="st">'auto'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="52">
-<pre><code>&lt;matplotlib.image.AxesImage at 0x7fe42b462590&gt;</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>&lt;matplotlib.image.AxesImage at 0x7fdb7f34b310&gt;</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <p><img src="chess_board_segmentation_files/figure-html/cell-5-output-2.png" width="594" height="431"></p>
@@ -409,7 +428,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_files/figure-html/cell-6-output-1.png" width="703" height="950"></p>
+<p><img src="chess_board_segmentation_files/figure-html/cell-6-output-1.png" width="532" height="950"></p>
 </div>
 </div>
 <p>But as you can see, there are simply too many points due to too many intersecting lines. We are mainly intereseted in just 4 points which represent the 4 corners of the chess board. We can use KMeans algorithm with a cluster size of 4 to group the close together points. The K-means clustering algorithm is commonly used for unsupervised learning tasks to group similar data points together. It is an iterative algorithm that aims to minimize the within-cluster variance by adjusting the cluster centroids until convergence.</p>
@@ -430,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_files/figure-html/cell-7-output-1.png" width="703" height="950"></p>
+<p><img src="chess_board_segmentation_files/figure-html/cell-7-output-1.png" width="532" height="950"></p>
 </div>
 </div>
 <div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span><span class="dv">4</span>, random_state<span class="op">=</span><span class="dv">0</span>, n_init<span class="op">=</span><span class="st">"auto"</span>).fit(intersection_points)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -459,7 +478,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_files/figure-html/cell-8-output-1.png" width="718" height="950"></p>
+<p><img src="chess_board_segmentation_files/figure-html/cell-8-output-1.png" width="543" height="950"></p>
 </div>
 </div>
 </section>
@@ -493,7 +512,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_files/figure-html/cell-9-output-1.png" width="718" height="950"></p>
+<p><img src="chess_board_segmentation_files/figure-html/cell-9-output-1.png" width="543" height="950"></p>
 </div>
 </div>
 

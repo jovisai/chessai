@@ -11,7 +11,7 @@ import skimage.io
 import os
 
 # Get the path to the video file.
-video_file = "data/VOD_20230708_062617.mp4"
+video_file = "data/VOD_20230708_195627.mp4"
 
 import cv2
 import os

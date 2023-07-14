@@ -14,8 +14,7 @@ To segment the chess board from the environment, I am using a trick by coloring 
 import matplotlib.pyplot as plt
 import cv2
 
-# image = cv2.imread('data/IMG_20230706_204254.jpg')
-image = cv2.imread('utilities/video_frames/frame_240.jpg')
+image = cv2.imread('utilities/data/chess_algo_1.jpg')
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 # convert to LAB color space
@@ -238,7 +237,7 @@ plt.show()
 ```
 
 ### Remove the rest of the environment
-its a simple crop based on the polygon I generated from Convexhull calculation
+Its a simple crop based on the polygon I generated from Convexhull calculation
 
 ```{python}
 from skimage import draw
@@ -249,6 +248,13 @@ for k in hull.vertices:
   polygon_points.append(points[k])
 
 polygon_points = np.array(polygon_points)
+
+
+
+polygon_points[2][1] = polygon_points[2][1] - 50
+polygon_points[3][1] = polygon_points[2][1] - 50
+
+print(polygon_points)
 
 # Create a mask of the polygon region
 mask = np.zeros(image_rgb.shape[:2], dtype=np.uint8)

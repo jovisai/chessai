@@ -12,9 +12,11 @@ website:
       - section: "Research Notebooks"
         contents:
           - chess_board_segmentation.qmd
+          - chess_board_segmentation_with_flat_board.qmd
       - section: "Utilities"
         contents:
           - utilities/video_to_images.qmd
+          - utilities/segmenting_by_color.qmd
 
           
 

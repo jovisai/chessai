@@ -1,0 +1,279 @@
+---
+title: "Chess Board Segmentation with gray white board"
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+
+### Applying Color Filtering to Image to isolate Red color
+
+To segment the chess board from the environment, I am using a trick by coloring the boundaries of my chessboard as you can see in the below image.
+
+```{python}
+import matplotlib.pyplot as plt
+import cv2
+import urllib
+import numpy as np
+
+# image = cv2.imread('http://192.168.1.20:8080/photo.jpg')
+
+url = 'http://192.168.1.10:8080/photo.jpg'
+url_response = urllib.request.urlopen(url)
+img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
+image = cv2.imdecode(img_array, -1)
+
+image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+# convert to LAB color space
+lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+
+# Perform Otsu threshold on the A-channel 
+th = cv2.threshold(lab[:,:,1], 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+result = cv2.bitwise_and(image, image, mask=th)
+
+# Display the image using Matplotlib
+fig, ax = plt.subplots(nrows=1, ncols=2)
+ax[0].set_title('Loaded Sample Image')
+ax[0].imshow(image_rgb)
+ax[0].axis('off')
+ax[1].set_title('Red Color Segmented')
+ax[1].imshow(result)
+ax[1].axis('off')
+
+plt.tight_layout()
+plt.axis('off')
+# Display the plot
+plt.show()
+```
+
+The first step in the segmentation algorithm is to use the red boundary and isolate it from the full image. 
+
+This code snippet demonstrates how to perform color-based segmentation using the LAB color space and Otsu thresholding. Here's a breakdown of the code:
+
+1. Convert to LAB Color Space:
+   - `lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)`: Converts the original image from the default BGR color space to the LAB color space. The LAB color space consists of three channels: L (Lightness), A (green-magenta component), and B (blue-yellow component). This conversion is performed using the `cvtColor` function from OpenCV.
+
+2. Perform Otsu Thresholding on the A-channel:
+   - `th = cv2.threshold(lab[:,:,1], 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]`: Extracts the A-channel (green-magenta component) from the LAB image and applies Otsu's thresholding technique to segment the image into foreground and background regions. Otsu's thresholding automatically calculates the optimal threshold value based on the image histogram. The resulting binary threshold image is stored in the variable `th`.
+
+3. Apply the Mask:
+   - `image = cv2.bitwise_and(image, image, mask=th)`: Applies the binary threshold mask to the original image using the `bitwise_and` function from OpenCV. This operation retains only the pixels in the original image that correspond to the foreground regions identified by the threshold mask. The `mask` argument specifies the binary mask to be applied.
+
+After executing this code, the `image` variable will hold the processed image, where only the foreground regions, determined by Otsu's thresholding on the A-channel, are visible, and the background is set to black.
+
+### Identifying all the lines in the image using Classic straight-line Hough transform
+The Hough transform is a simple algorithm commonly used in computer vision to detect lines and shapes in an image. It provides a robust method to identify geometric patterns by representing them in a parameter space known as the Hough space. The algorithm works by converting image space coordinates to parameter space, where each point in the parameter space corresponds to a possible line or shape in the image. By accumulating votes for different parameter combinations, the Hough transform identifies the most prominent lines or shapes based on the peaks in the parameter space. This approach is particularly useful for line detection, as it can handle various types of lines, including straight lines, curves, and even partially occluded or broken lines. 
+
+```{python}
+from skimage.transform import hough_line, hough_line_peaks
+from skimage.color import rgb2gray
+import matplotlib.pyplot as plt
+import numpy as np
+
+image_gray = rgb2gray(image_rgb)
+
+# Classic straight-line Hough transform
+# Set a precision of 0.5 degree.
+tested_angles = np.linspace(-np.pi / 2, np.pi / 2, 360, endpoint=False)
+h, theta, d = hough_line(rgb2gray(result), theta=tested_angles)
+
+plt.figure(figsize=(20,10))
+plt.imshow(image_gray, cmap='gray')
+
+for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
+    (x0, y0) = dist * np.array([np.cos(angle), np.sin(angle)])
+    plt.axline((x0, y0), slope=np.tan(angle + np.pi/2))
+
+plt.title('Detected lines')
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+```
+
+Here is the explanation of the key part of code which does line detection using the Hough transform:
+
+1. **Generating tested angles**
+
+```python
+tested_angles = np.linspace(-np.pi / 2, np.pi / 2, 360, endpoint=False)
+```
+
+In this line, the `np.linspace()` function generates an array of 360 equally spaced angles between `-np.pi / 2` and `np.pi / 2`. These angles represent the range of lines to be tested during the Hough transform. The `endpoint=False` argument ensures that the endpoint is not included in the generated array.
+
+2. **Performing the Hough transform**
+
+```python
+h, theta, d = hough_line(rgb2gray(result), theta=tested_angles)
+```
+
+Here, the `hough_line()` function is applied to the grayscale version of the `result` image using `rgb2gray()` to convert it. The `theta` parameter is set to the `tested_angles` array, which specifies the angles to consider during the transform. The resulting Hough accumulator array `h`, along with the theta angles `theta` and distances `d`, are stored.
+
+
+```{python}
+plt.title("hough transform visualization")
+plt.imshow(np.log(1 + h),
+           extent=[np.rad2deg(theta[-1]), np.rad2deg(theta[0]), d[-1], d[0]],
+           cmap='gray', aspect='auto')
+```
+
+
+3. **Detecting and visualizing the lines**
+
+```python
+for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
+    (x0, y0) = dist * np.array([np.cos(angle), np.sin(angle)])
+    plt.axline((x0, y0), slope=np.tan(angle + np.pi/2))
+```
+
+This loop iterates through the peaks detected in the Hough transform using the `hough_line_peaks()` function. For each peak, the `angle` and `dist` values represent the orientation and distance from the origin to a line in the image. The `(x0, y0)` coordinates are calculated by multiplying the distance with the `[np.cos(angle), np.sin(angle)]` vector, which determines the line's position. Finally, `plt.axline()` is used to draw a line on the plot using the calculated `(x0, y0)` coordinates and the tangent of the angle plus `np.pi/2`.
+
+By running this code, you will perform the Hough transform to detect lines in an image. The resulting lines will be visualized on a plot using `plt.axline()`. This code segment is useful for line detection applications and helps to understand the concept of identifying lines in an image using the Hough transform.
+
+
+### Find all points of intersections of the lines
+To extract the end points of the chess board, we need to find the intersection of the Hough lines.
+
+```{python}
+import math 
+
+def find_intersection_point(fp_x0, fp_y0, slope1, sp_x0, sp_y0, slope2):
+    if (slope1 - slope2) == 0:
+      return []
+
+    # Calculate the intersection point coordinates
+    x_intersect = (sp_y0 - fp_y0 + slope1 * fp_x0 - slope2 * sp_x0) / (slope1 - slope2)
+    y_intersect = slope1 * (x_intersect - fp_x0) + fp_y0
+
+    if x_intersect < 0 or y_intersect < 0 or x_intersect > 4000 or y_intersect > 4000:
+      return []
+
+    angle_of_intersection =  math.degrees(math.atan((slope1-slope2)/(1+slope1*slope2)))
+
+    if angle_of_intersection < 45 and angle_of_intersection > -45:
+      return []
+
+    # Intersection point coordinates
+    intersection_point = [x_intersect, y_intersect]
+
+    return intersection_point
+
+lines = []
+all_points_and_slopes = []
+for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
+    (x0, y0) = dist * np.array([np.cos(angle), np.sin(angle)])
+    lines.append([x0, y0, angle])
+    # ax[2].axline((x0, y0), slope=np.tan(angle + np.pi/2))
+    # ax[2].scatter(x0, y0)
+    slope = np.tan(angle + np.pi/2)
+    all_points_and_slopes.append([x0, y0, slope])
+
+# find intersection points
+intersection_points = []
+for i in range(len(all_points_and_slopes)):
+  for j in range(1, len(all_points_and_slopes)):
+    p1 = all_points_and_slopes[i]
+    p2 = all_points_and_slopes[j]
+
+    ip = find_intersection_point(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2])
+    if ip:
+      intersection_points.append(ip)
+
+intersection_points = np.array(intersection_points)
+
+plt.figure(figsize=(20,10))
+plt.imshow(image_gray, cmap='gray')
+plt.scatter(intersection_points[:, 0], intersection_points[:, 1], color='r')
+plt.title('Detected points of intersections')
+plt.axis('off')
+plt.tight_layout()
+plt.show()
+```
+But as you can see, there are simply too many points due to too many intersecting lines. We are mainly intereseted in just 
+4 points which represent the 4 corners of the chess board. We can use KMeans algorithm with a cluster size of 4 to group the close together points. The K-means clustering algorithm is commonly used for unsupervised learning tasks to group similar data points together. It is an iterative algorithm that aims to minimize the within-cluster variance by adjusting the cluster centroids until convergence.
+
+```{python}
+from sklearn.cluster import KMeans
+
+kmeans = KMeans(n_clusters=4, random_state=0, n_init="auto").fit(intersection_points)
+
+plt.figure(figsize=(20,10))
+plt.imshow(image_gray, cmap='gray')
+plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], color='r')
+plt.title('Detected points of intersections')
+
+plt.axis('off')
+plt.tight_layout()
+plt.show()
+
+```
+
+
+```python
+kmeans = KMeans(n_clusters=4, random_state=0, n_init="auto").fit(intersection_points)
+```
+
+Here, the `KMeans` class is instantiated with the following parameters:
+- `n_clusters=4`: Specifies the number of clusters to form. In this case, we want to create four clusters.
+- `random_state=0`: Sets the random seed for reproducibility. By setting a specific random state value, the clustering results will be the same each time the code is run with the same data.
+- `n_init="auto"`: Determines the number of times the K-means algorithm will be run with different centroid seeds. "auto" automatically selects a value based on the number of data points.
+
+The `fit()` method is then called on the `KMeans` object, with `intersection_points` as the input data. This fits the K-means model to the data, performing the clustering and assigning each data point to one of the four clusters.
+
+The result of running the `fit()` method is stored in the `kmeans` variable. This object contains information about the fitted K-means model, including the cluster assignments for each data point.
+
+By examining the `kmeans` object, you can access various properties and methods, such as `kmeans.labels_` to retrieve the assigned cluster labels for each data point or `kmeans.cluster_centers_` to obtain the centroid coordinates of each cluster.
+
+### Connect the 4 points into a polygon
+We use the standard convexHull algorithm to sort the 4 points in the order in which one can connect them into a polygon.
+Convex hull is a concept in computational geometry that represents the smallest convex polygon that encloses a given set of points in a plane. 
+```{python}
+from scipy.spatial import ConvexHull
+points = kmeans.cluster_centers_
+hull = ConvexHull(points)
+
+plt.figure(figsize=(20,10))
+plt.imshow(image_gray, cmap='gray')
+plt.plot(points[:,0], points[:,1], 'o', color='r')
+for simplex in hull.simplices:
+    plt.plot(points[simplex, 0], points[simplex, 1], color='r')
+plt.axis('off')
+plt.tight_layout()
+plt.show()
+```
+
+### Remove the rest of the environment
+Its a simple crop based on the polygon I generated from Convexhull calculation
+
+```{python}
+from skimage import draw
+
+points = kmeans.cluster_centers_
+polygon_points = []
+for k in hull.vertices:
+  polygon_points.append(points[k])
+
+polygon_points = np.array(polygon_points)
+
+
+
+polygon_points[2][1] = polygon_points[2][1] - 50
+polygon_points[3][1] = polygon_points[2][1] - 50
+
+print(polygon_points)
+
+# Create a mask of the polygon region
+mask = np.zeros(image_rgb.shape[:2], dtype=np.uint8)
+rr, cc = draw.polygon(polygon_points[:, 1], polygon_points[:, 0])
+mask[rr, cc] = 1
+
+# Apply the mask to the input image
+cropped_image = image_rgb.copy()
+cropped_image[mask == 0] = 0
+plt.figure(figsize=(20,10))
+plt.imshow(cropped_image)
+plt.axis('off')
+plt.tight_layout()
+plt.show()
+```

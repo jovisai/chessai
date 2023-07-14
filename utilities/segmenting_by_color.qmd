@@ -1,0 +1,147 @@
+---
+title: "Segmenting by colors in a image using LAB Space"
+format:
+  html:
+    code-fold: false
+jupyter: python3
+---
+
+### Segmenting by colors
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+from skimage.io import imread
+from skimage.color import rgb2lab, rgb2hsv
+from skimage.transform import rescale, resize
+
+# load the image
+url = '../data/colors.jpg'
+cimage = imread(url)
+cimage = resize(cimage, (cimage.shape[0] // 4, cimage.shape[1] // 4),
+                       anti_aliasing=True)
+
+# convert the image from RGB to LAB
+lab_img = rgb2lab(cimage)
+
+fig, ax = plt.subplots(1, 2, figsize=(6,10))
+ax[0].imshow(cimage)
+ax[0].set_title('RGB color space')
+
+ax[1].imshow(lab_img, cmap='gray')
+ax[1].set_title('LAB color space')
+plt.show()
+```
+
+### Visualizing the colors in image on the lab space
+
+```{python}
+from skimage import img_as_float
+# to plot the colors we will use the RGB values from the
+# image directly for colors. 
+x,y, _ = cimage.shape
+to_plot = cimage.reshape(x * y, 3)
+colors_map = img_as_float(to_plot)
+
+# create dataset for scatter plot
+scatter_x = []
+scatter_y = []
+for xi in range(x):
+    for yi in range(y):
+        L_val = lab_img[xi,yi][0] 
+        A_val = lab_img[xi,yi][1] 
+        B_val = lab_img[xi,yi][2]
+        scatter_x.append(A_val)
+        scatter_y.append(B_val)
+        
+plt.figure(figsize=(8,8))
+plt.xlabel("a* from green to red")
+plt.ylabel("b* from blue to yellow")
+plt.scatter(scatter_x,scatter_y, c=colors_map)
+plt.show()
+```
+
+### Filtering the colors as per the above ranges in the plot
+
+```{python}
+def filter_color(cimage, L_val_min, A_val_min, A_val_max, B_val_min, B_val_max, color):
+    filtered_image = np.copy(cimage)
+    for xi in range(x):
+        for yi in range(y):
+            L_val = lab_img[xi,yi][0] 
+            A_val = lab_img[xi,yi][1] 
+            B_val = lab_img[xi,yi][2]
+            if L_val > L_val_min and A_val > A_val_min and A_val < A_val_max  and B_val > B_val_min and B_val < B_val_max:
+                filtered_image[xi, yi] = color
+            else:
+                filtered_image[xi, yi] = [255,255,255]   
+    return filtered_image
+```
+```{python}
+red = filter_color(cimage, 30, 25, 100, 0, 100, [255, 0, 0])
+
+
+fig, ax = plt.subplots(1, 2, figsize=(6,10))
+ax[0].imshow(cimage)
+ax[0].set_title('RGB color space')
+
+ax[1].imshow(red, cmap='gray')
+ax[1].set_title('Red regions')
+plt.show()
+```
+
+```{python}
+blue = filter_color(cimage, 50,-40, 30, -128, -20, [0, 0, 255])
+
+
+fig, ax = plt.subplots(1, 2, figsize=(6,10))
+ax[0].imshow(cimage)
+ax[0].set_title('RGB color space')
+
+ax[1].imshow(blue, cmap='gray')
+ax[1].set_title('blue regions')
+plt.show()
+```
+
+
+```{python}
+green = filter_color(cimage, 50, -128, -20, 0, 50, [0, 255, 0])
+
+
+fig, ax = plt.subplots(1, 2, figsize=(6,10))
+ax[0].imshow(cimage)
+ax[0].set_title('RGB color space')
+
+ax[1].imshow(green, cmap='gray')
+ax[1].set_title('green regions')
+plt.show()
+```
+### Expriment - Isolate Red, Blue and Green
+
+```{python}
+filtered_image = np.copy(cimage)
+r = [30, 25, 100, 0, 100]
+b = [50,-40, 30, -128, -20]
+g = [50, -128, -20, 0, 50]
+for xi in range(x):
+    for yi in range(y):
+        L_val = lab_img[xi,yi][0] 
+        A_val = lab_img[xi,yi][1] 
+        B_val = lab_img[xi,yi][2]
+        ## red
+        if L_val > r[0] and A_val > r[1] and A_val < r[2]  and B_val > r[3] and B_val < r[4]:
+            filtered_image[xi, yi] = [255, 0, 0] # red
+        elif L_val > b[0] and A_val > b[1] and A_val < b[2]  and B_val > b[3] and B_val < b[4]:
+            filtered_image[xi, yi] = [0, 0, 255] # blue
+        elif L_val > g[0] and A_val > g[1] and A_val < g[2]  and B_val > g[3] and B_val < g[4]:
+            filtered_image[xi, yi] = [0, 255, 0] # green
+        else:
+            filtered_image[xi, yi] = [255,255,255]
+
+fig, ax = plt.subplots(1, 2, figsize=(6,10))
+ax[0].imshow(cimage)
+ax[0].set_title('RGB color space')
+
+ax[1].imshow(filtered_image, cmap='gray')
+ax[1].set_title('red, blue, green regions')
+plt.show()
+```

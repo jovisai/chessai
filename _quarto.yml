@@ -9,7 +9,7 @@ website:
     style: "floating"
     search: true
     contents:
-      - section: "Research Notebooks"
+      - section: "CV Notes"
         contents:
           - chess_board_segmentation.qmd
           - chess_board_segmentation_with_flat_board.qmd

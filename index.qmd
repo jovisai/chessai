@@ -1,5 +1,5 @@
 ---
-title: "Muthukrishnan"
+title: "Computer Vision Notebooks"
 format:
   html:
     code-fold: true

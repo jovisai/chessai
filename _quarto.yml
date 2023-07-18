@@ -22,5 +22,7 @@ website:
 
 format:
   html:
-    theme: cosmo
+    theme: flatly
     toc: true
+    fontsize: 1.1em
+    linestretch: 1.7

@@ -14,7 +14,7 @@ To segment the chess board from the environment, I am using a trick by coloring 
 import matplotlib.pyplot as plt
 import cv2
 
-image = cv2.imread('utilities/data/chess_algo_1.jpg')
+image = cv2.imread('data/chess_algo_1.jpg')
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 # convert to LAB color space
@@ -248,11 +248,6 @@ for k in hull.vertices:
   polygon_points.append(points[k])
 
 polygon_points = np.array(polygon_points)
-
-
-
-polygon_points[2][1] = polygon_points[2][1] - 50
-polygon_points[3][1] = polygon_points[2][1] - 50
 
 print(polygon_points)
 

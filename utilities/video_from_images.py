@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 
-def create_video_from_images(image_files, output_file, fps=36):
+def create_video_from_images(image_files, output_file, fps=24):
   """Creates a video from a list of image files.
 
   Args:
@@ -22,16 +22,15 @@ def create_video_from_images(image_files, output_file, fps=36):
   video_writer.release()
 
 
-files = os.listdir('/home/leopard/development/jovis.ai/chessai/temp/video_frames_2')
+files = os.listdir('/home/leopard/development/jovis.ai/chessai/temp/output_frames_3_3/')
 size = len(files)
-print(size)
 image_files = []
-for i in range(3000):
-   path = '/home/leopard/development/jovis.ai/chessai/temp/video_frames_2/frame_{0}.jpg'.format(i)
+for i in range(13657):
+   path = '/home/leopard/development/jovis.ai/chessai/temp/output_frames_3_3/frame_{0}.jpg'.format(i)
    if os.path.exists(path):
     image_files.append(path)
 
 print(len(image_files))
 if __name__ == "__main__":
-  output_file = "temp/video_2.avi"
+  output_file = "temp/video_3.avi"
   create_video_from_images(image_files, output_file)

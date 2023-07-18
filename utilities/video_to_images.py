@@ -2,13 +2,13 @@ import skimage.io
 import os
 
 # Get the path to the video file.
-video_file = "temp/VID_20230713_213108.mp4"
+video_file = "temp/VOD_20230715_135629.mp4"
 
 import cv2
 import os
 
 # Create a directory to store the images.
-image_dir = "temp/video_frames_2"
+image_dir = "temp/video_frames_3"
 if not os.path.exists(image_dir):
     os.mkdir(image_dir)
 

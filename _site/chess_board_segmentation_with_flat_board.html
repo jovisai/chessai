@@ -204,6 +204,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#find-all-points-of-intersections-of-the-lines" id="toc-find-all-points-of-intersections-of-the-lines" class="nav-link" data-scroll-target="#find-all-points-of-intersections-of-the-lines">Find all points of intersections of the lines</a></li>
   <li><a href="#connect-the-4-points-into-a-polygon" id="toc-connect-the-4-points-into-a-polygon" class="nav-link" data-scroll-target="#connect-the-4-points-into-a-polygon">Connect the 4 points into a polygon</a></li>
   <li><a href="#remove-the-rest-of-the-environment" id="toc-remove-the-rest-of-the-environment" class="nav-link" data-scroll-target="#remove-the-rest-of-the-environment">Remove the rest of the environment</a></li>
+  <li><a href="#projective-transform-the-board-alone" id="toc-projective-transform-the-board-alone" class="nav-link" data-scroll-target="#projective-transform-the-board-alone">Projective transform the board alone</a></li>
   </ul>
 </nav>
     </div>
@@ -238,38 +239,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> urllib</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># image = cv2.imread('http://192.168.1.20:8080/photo.jpg')</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> cv2.imread(<span class="st">'data/frame_3.jpg'</span>)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>url <span class="op">=</span> <span class="st">'http://192.168.1.10:8080/photo.jpg'</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>url_response <span class="op">=</span> urllib.request.urlopen(url)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>img_array <span class="op">=</span> np.array(<span class="bu">bytearray</span>(url_response.read()), dtype<span class="op">=</span>np.uint8)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> cv2.imdecode(img_array, <span class="op">-</span><span class="dv">1</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>image_rgb <span class="op">=</span> cv2.cvtColor(image, cv2.COLOR_BGR2RGB)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># convert to LAB color space</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>lab <span class="op">=</span> cv2.cvtColor(image, cv2.COLOR_BGR2LAB)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>image_rgb <span class="op">=</span> cv2.cvtColor(image, cv2.COLOR_BGR2RGB)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># convert to LAB color space</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>lab <span class="op">=</span> cv2.cvtColor(image, cv2.COLOR_BGR2LAB)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform Otsu threshold on the A-channel </span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>th <span class="op">=</span> cv2.threshold(lab[:,:,<span class="dv">1</span>], <span class="dv">127</span>, <span class="dv">255</span>, cv2.THRESH_BINARY <span class="op">+</span> cv2.THRESH_OTSU)[<span class="dv">1</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> cv2.bitwise_and(image, image, mask<span class="op">=</span>th)</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform Otsu threshold on the A-channel </span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>th <span class="op">=</span> cv2.threshold(lab[:,:,<span class="dv">1</span>], <span class="dv">127</span>, <span class="dv">255</span>, cv2.THRESH_BINARY <span class="op">+</span> cv2.THRESH_OTSU)[<span class="dv">1</span>]</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> cv2.bitwise_and(image, image, mask<span class="op">=</span>th)</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the image using Matplotlib</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(nrows<span class="op">=</span><span class="dv">1</span>, ncols<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="st">'Loaded Sample Image'</span>)</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].imshow(image_rgb)</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].axis(<span class="st">'off'</span>)</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">'Red Color Segmented'</span>)</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].imshow(result)</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].axis(<span class="st">'off'</span>)</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the plot</span></span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the image using Matplotlib</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(nrows<span class="op">=</span><span class="dv">1</span>, ncols<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="st">'Loaded Sample Image'</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].imshow(image_rgb)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].axis(<span class="st">'off'</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">'Red Color Segmented'</span>)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].imshow(result)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].axis(<span class="st">'off'</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the plot</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-2-output-1.png" width="662" height="275"></p>
+<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-2-output-1.png" width="576" height="470"></p>
 </div>
 </div>
 <p>The first step in the segmentation algorithm is to use the red boundary and isolate it from the full image.</p>
@@ -322,7 +318,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-3-output-1.png" width="1566" height="950"></p>
+<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-3-output-1.png" width="924" height="950"></p>
 </div>
 </div>
 <p>Here is the explanation of the key part of code which does line detection using the Hough transform:</p>
@@ -344,8 +340,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>           extent<span class="op">=</span>[np.rad2deg(theta[<span class="op">-</span><span class="dv">1</span>]), np.rad2deg(theta[<span class="dv">0</span>]), d[<span class="op">-</span><span class="dv">1</span>], d[<span class="dv">0</span>]],</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>           cmap<span class="op">=</span><span class="st">'gray'</span>, aspect<span class="op">=</span><span class="st">'auto'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="3">
-<pre><code>&lt;matplotlib.image.AxesImage at 0x7f1256d1a530&gt;</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="126">
+<pre><code>&lt;matplotlib.image.AxesImage at 0x7f5e02d110c0&gt;</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-4-output-2.png" width="594" height="431"></p>
@@ -420,36 +416,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
 <span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
-<pre><code>/tmp/ipykernel_182810/3893695547.py:14: RuntimeWarning: divide by zero encountered in double_scalars
-  angle_of_intersection =  math.degrees(math.atan((slope1-slope2)/(1+slope1*slope2)))</code></pre>
-</div>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-5-output-2.png" width="1234" height="950"></p>
+<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-5-output-1.png" width="532" height="950"></p>
 </div>
 </div>
 <p>But as you can see, there are simply too many points due to too many intersecting lines. We are mainly intereseted in just 4 points which represent the 4 corners of the chess board. We can use KMeans algorithm with a cluster size of 4 to group the close together points. The K-means clustering algorithm is commonly used for unsupervised learning tasks to group similar data points together. It is an iterative algorithm that aims to minimize the within-cluster variance by adjusting the cluster centroids until convergence.</p>
 <div class="cell" data-execution_count="5">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.cluster <span class="im">import</span> KMeans</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span><span class="dv">4</span>, random_state<span class="op">=</span><span class="dv">0</span>, n_init<span class="op">=</span><span class="st">"auto"</span>).fit(intersection_points)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>,<span class="dv">10</span>))</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>plt.imshow(image_gray, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>plt.scatter(kmeans.cluster_centers_[:, <span class="dv">0</span>], kmeans.cluster_centers_[:, <span class="dv">1</span>], color<span class="op">=</span><span class="st">'r'</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Detected points of intersections'</span>)</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.cluster <span class="im">import</span> KMeans</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span><span class="dv">4</span>, random_state<span class="op">=</span><span class="dv">0</span>, n_init<span class="op">=</span><span class="st">"auto"</span>).fit(intersection_points)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>,<span class="dv">10</span>))</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>plt.imshow(image_gray, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>plt.scatter(kmeans.cluster_centers_[:, <span class="dv">0</span>], kmeans.cluster_centers_[:, <span class="dv">1</span>], color<span class="op">=</span><span class="st">'r'</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Detected points of intersections'</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-6-output-1.png" width="1234" height="950"></p>
+<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-6-output-1.png" width="532" height="950"></p>
 </div>
 </div>
-<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span><span class="dv">4</span>, random_state<span class="op">=</span><span class="dv">0</span>, n_init<span class="op">=</span><span class="st">"auto"</span>).fit(intersection_points)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>kmeans <span class="op">=</span> KMeans(n_clusters<span class="op">=</span><span class="dv">4</span>, random_state<span class="op">=</span><span class="dv">0</span>, n_init<span class="op">=</span><span class="st">"auto"</span>).fit(intersection_points)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Here, the <code>KMeans</code> class is instantiated with the following parameters: - <code>n_clusters=4</code>: Specifies the number of clusters to form. In this case, we want to create four clusters. - <code>random_state=0</code>: Sets the random seed for reproducibility. By setting a specific random state value, the clustering results will be the same each time the code is run with the same data. - <code>n_init="auto"</code>: Determines the number of times the K-means algorithm will be run with different centroid seeds. “auto” automatically selects a value based on the number of data points.</p>
 <p>The <code>fit()</code> method is then called on the <code>KMeans</code> object, with <code>intersection_points</code> as the input data. This fits the K-means model to the data, performing the clustering and assigning each data point to one of the four clusters.</p>
 <p>The result of running the <code>fit()</code> method is stored in the <code>kmeans</code> variable. This object contains information about the fitted K-means model, including the cluster assignments for each data point.</p>
@@ -461,21 +453,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-execution_count="6">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.spatial <span class="im">import</span> ConvexHull</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> kmeans.cluster_centers_</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>hull <span class="op">=</span> ConvexHull(points)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>,<span class="dv">10</span>))</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>plt.imshow(image_gray, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>plt.plot(points[:,<span class="dv">0</span>], points[:,<span class="dv">1</span>], <span class="st">'o'</span>, color<span class="op">=</span><span class="st">'r'</span>)</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> simplex <span class="kw">in</span> hull.simplices:</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(points[simplex, <span class="dv">0</span>], points[simplex, <span class="dv">1</span>], color<span class="op">=</span><span class="st">'r'</span>)</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.spatial <span class="im">import</span> ConvexHull</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> kmeans.cluster_centers_</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>hull <span class="op">=</span> ConvexHull(points)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>,<span class="dv">10</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>plt.imshow(image_gray, cmap<span class="op">=</span><span class="st">'gray'</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>plt.plot(points[:,<span class="dv">0</span>], points[:,<span class="dv">1</span>], <span class="st">'o'</span>, color<span class="op">=</span><span class="st">'r'</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> simplex <span class="kw">in</span> hull.simplices:</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    plt.plot(points[simplex, <span class="dv">0</span>], points[simplex, <span class="dv">1</span>], color<span class="op">=</span><span class="st">'r'</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-7-output-1.png" width="1261" height="950"></p>
+<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-7-output-1.png" width="543" height="950"></p>
 </div>
 </div>
 </section>
@@ -485,46 +477,102 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-execution_count="7">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage <span class="im">import</span> draw</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> kmeans.cluster_centers_</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>polygon_points <span class="op">=</span> []</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> hull.vertices:</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  polygon_points.append(points[k])</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>polygon_points <span class="op">=</span> np.array(polygon_points)</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>polygon_points[<span class="dv">2</span>][<span class="dv">1</span>] <span class="op">=</span> polygon_points[<span class="dv">2</span>][<span class="dv">1</span>] <span class="op">-</span> <span class="dv">50</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>polygon_points[<span class="dv">3</span>][<span class="dv">1</span>] <span class="op">=</span> polygon_points[<span class="dv">2</span>][<span class="dv">1</span>] <span class="op">-</span> <span class="dv">50</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(polygon_points)</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a mask of the polygon region</span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>mask <span class="op">=</span> np.zeros(image_rgb.shape[:<span class="dv">2</span>], dtype<span class="op">=</span>np.uint8)</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>rr, cc <span class="op">=</span> draw.polygon(polygon_points[:, <span class="dv">1</span>], polygon_points[:, <span class="dv">0</span>])</span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>mask[rr, cc] <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the mask to the input image</span></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>cropped_image <span class="op">=</span> image_rgb.copy()</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>cropped_image[mask <span class="op">==</span> <span class="dv">0</span>] <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>,<span class="dv">10</span>))</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>plt.imshow(cropped_image)</span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage <span class="im">import</span> draw</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> kmeans.cluster_centers_</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>polygon_points <span class="op">=</span> []</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> hull.vertices:</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  polygon_points.append(points[k])</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>polygon_points <span class="op">=</span> np.array(polygon_points)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(polygon_points)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a mask of the polygon region</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>mask <span class="op">=</span> np.zeros(image_rgb.shape[:<span class="dv">2</span>], dtype<span class="op">=</span>np.uint8)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>rr, cc <span class="op">=</span> draw.polygon(polygon_points[:, <span class="dv">1</span>], polygon_points[:, <span class="dv">0</span>])</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>mask[rr, cc] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply the mask to the input image</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>cropped_image <span class="op">=</span> image_rgb.copy()</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>cropped_image[mask <span class="op">==</span> <span class="dv">0</span>] <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">20</span>,<span class="dv">10</span>))</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>plt.imshow(cropped_image)</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'off'</span>)</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[[ 896.86945895 2858.59575184]
- [1380.52322126 2131.49935418]
- [1692.93644219 2220.5996159 ]
- [1114.79920516 2170.5996159 ]]</code></pre>
+<pre><code>[[1563.08639326 3231.0456892 ]
+ [ 160.00356693 2540.21979825]
+ [ 903.63144527 1588.4195179 ]
+ [2058.46128992 2020.18400548]]</code></pre>
 </div>
 <div class="cell-output cell-output-display">
-<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-8-output-2.png" width="1261" height="950"></p>
+<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-8-output-2.png" width="543" height="950"></p>
 </div>
 </div>
+</section>
+<section id="projective-transform-the-board-alone" class="level3">
+<h3 class="anchored" data-anchor-id="projective-transform-the-board-alone">Projective transform the board alone</h3>
+<p>Projective transform, also known as perspective transform or homography, is a fundamental concept in image processing and computer vision. It is a geometric transformation used to map points from one plane (2D space) to another plane (also 2D space) in a way that preserves straight lines. This transformation is particularly useful when dealing with images captured from different viewpoints or with varying camera angles.</p>
+<p>In simpler terms, projective transform allows us to correct the perspective distortion in an image by transforming it into a new view as if it was captured from a different angle or position.</p>
+<p>The projective transform is represented by a 3x3 matrix known as the homography matrix. This matrix is determined by a set of corresponding points between two images or scenes. Typically, at least four pairs of corresponding points are needed to calculate the homography matrix.</p>
+<p>Let’s assume we have two sets of corresponding points:</p>
+<pre><code>Source points (X, Y) = {(x1, y1), (x2, y2), (x3, y3), (x4, y4)}
+Destination points (X', Y') = {(x1', y1'), (x2', y2'), (x3', y3'), (x4', y4')}</code></pre>
+<p>The goal is to find a 3x3 matrix H such that, when we apply the projective transform to each point (x, y) in the source image, it will be mapped to a new point (x’, y’) in the destination image:</p>
+<pre><code>| x' |   | h11 h12 h13 |   | x |
+| y' | = | h21 h22 h23 | * | y |
+| 1  |   | h31 h32 h33 |   | 1 |</code></pre>
+<p>Once the homography matrix H is calculated, we can use it to warp the source image onto the destination image, or vice versa, to align or overlay them correctly.</p>
+<p>Applications of projective transform in image processing include:</p>
+<ol type="1">
+<li>Image stitching: To combine multiple images taken from different perspectives to create a panoramic image.</li>
+<li>Augmented reality: To superimpose virtual objects onto real-world scenes by aligning them correctly.</li>
+<li>Image rectification: To remove perspective distortion, making objects appear in a plane-parallel view.</li>
+<li>Camera calibration: To estimate camera parameters and correct image distortions in computer vision tasks.</li>
+</ol>
+<p>It’s important to note that the projective transform assumes a pinhole camera model, which is a simplified model of real-world cameras that neglects certain optical distortions. For more accurate transformations, more complex camera models can be used, such as the radial distortion model in camera calibration.</p>
+<div class="cell" data-execution_count="8">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage <span class="im">import</span> transform</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage.transform <span class="im">import</span> resize</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>h, w, _ <span class="op">=</span> cropped_image.shape</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>src <span class="op">=</span> np.array([[<span class="dv">0</span>, <span class="dv">0</span>], [<span class="dv">0</span>, w], [h, w], [h, <span class="dv">0</span>]])</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>dst <span class="op">=</span> np.array([polygon_points[<span class="dv">3</span>], polygon_points[<span class="dv">0</span>], polygon_points[<span class="dv">1</span>], polygon_points[<span class="dv">2</span>]])</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>tform3 <span class="op">=</span> transform.ProjectiveTransform()</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>tform3.estimate(src, dst)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>warped <span class="op">=</span> transform.warp(cropped_image, tform3, output_shape<span class="op">=</span>(w, h))</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co"># flipped = np.flipud(warped)</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>final <span class="op">=</span> resize(warped, (w, w),</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>                    anti_aliasing<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">10</span>))</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>plt.imshow(final)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"off"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="131">
+<pre><code>(-0.5, 2159.5, 2159.5, -0.5)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="chess_board_segmentation_with_flat_board_files/figure-html/cell-9-output-2.png" width="758" height="758"></p>
+</div>
+</div>
+<p>Let’s break down what the core part of the code does:</p>
+<ol type="1">
+<li><p><code>src = np.array([[0, 0], [0, w], [h, w], [h, 0]])</code>: This line creates a NumPy array <code>src</code> containing four 2D points. These points represent the coordinates of a rectangular region in the source image that you want to transform. The points are given in (row, column) format, and they define a rectangular region with corners at (0,0), (0,w), (h,w), and (h,0). The <code>w</code> and <code>h</code> variables likely represent the width and height of the source image, respectively.</p></li>
+<li><p><code>dst = np.array([polygon_points[0], polygon_points[2], polygon_points[3], polygon_points[1]])</code>: This line creates another NumPy array <code>dst</code> containing four 2D points. These points are the corresponding destination coordinates where you want the points from <code>src</code> to be mapped after the transformation. The <code>polygon_points</code> array likely contains four 2D points representing the desired corners of the transformed region.</p></li>
+<li><p><code>tform3 = transform.ProjectiveTransform()</code>: This line creates an instance of the <code>ProjectiveTransform</code> class from the scikit-image library. This class represents a projective transformation (perspective transform) that can be used to transform points or images.</p></li>
+<li><p><code>tform3.estimate(src, dst)</code>: This line estimates the projective transformation based on the corresponding points defined in <code>src</code> and <code>dst</code>. It calculates the 3x3 homography matrix that maps the points in <code>src</code> to the points in <code>dst</code>, effectively determining the transformation required to warp the rectangular region defined by <code>src</code> to the desired shape represented by <code>dst</code>.</p></li>
+<li><p><code>warped = transform.warp(cropped_image, tform3, output_shape=(w, h))</code>: This line applies the estimated projective transformation to the <code>cropped_image</code>. The <code>warp</code> function from scikit-image is used for this purpose. The <code>cropped_image</code> is the source image from which you previously extracted the region defined by <code>src</code>. The <code>output_shape=(w, h)</code> argument specifies the dimensions of the output (warped) image, which should be the same as the dimensions of the original region defined by <code>src</code>. The <code>tform3</code> transformation is applied to the <code>cropped_image</code>, resulting in the <code>warped</code> image.</p></li>
+</ol>
+<p>After this code executes, the <code>warped</code> image will be a transformed version of the original <code>cropped_image</code>, where the rectangular region defined by <code>src</code> is now warped to match the desired shape represented by the corresponding points in <code>dst</code>.</p>
 
 
 </section>

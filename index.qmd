@@ -5,6 +5,8 @@ format:
     code-fold: true
 jupyter: python3
 ---
+![Muthukrishnan](data/IMG_4988.jpg)
+
 Hey there, fellow adventurers! Welcome to my corner of this research notebook. I'm Muthukrishnan, your friendly neighborhood software engineer.
 
 I thrive on curiosity and a thirst for knowledge, constantly seeking new experiences and learning opportunities. Whether it's diving into the depths of a gripping novel or immersing myself in the vibrant world of coding, I find joy in expanding my horizons.

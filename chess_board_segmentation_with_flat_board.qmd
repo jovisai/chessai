@@ -16,12 +16,7 @@ import cv2
 import urllib
 import numpy as np
 
-# image = cv2.imread('http://192.168.1.20:8080/photo.jpg')
-
-url = 'http://192.168.1.10:8080/photo.jpg'
-url_response = urllib.request.urlopen(url)
-img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
-image = cv2.imdecode(img_array, -1)
+image = cv2.imread('data/frame_3.jpg')
 
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 # convert to LAB color space
@@ -256,11 +251,6 @@ for k in hull.vertices:
 
 polygon_points = np.array(polygon_points)
 
-
-
-polygon_points[2][1] = polygon_points[2][1] - 50
-polygon_points[3][1] = polygon_points[2][1] - 50
-
 print(polygon_points)
 
 # Create a mask of the polygon region
@@ -277,3 +267,72 @@ plt.axis('off')
 plt.tight_layout()
 plt.show()
 ```
+
+### Projective transform the board alone
+Projective transform, also known as perspective transform or homography, is a fundamental concept in image processing and computer vision. It is a geometric transformation used to map points from one plane (2D space) to another plane (also 2D space) in a way that preserves straight lines. This transformation is particularly useful when dealing with images captured from different viewpoints or with varying camera angles.
+
+In simpler terms, projective transform allows us to correct the perspective distortion in an image by transforming it into a new view as if it was captured from a different angle or position.
+
+The projective transform is represented by a 3x3 matrix known as the homography matrix. This matrix is determined by a set of corresponding points between two images or scenes. Typically, at least four pairs of corresponding points are needed to calculate the homography matrix.
+
+Let's assume we have two sets of corresponding points:
+
+```
+Source points (X, Y) = {(x1, y1), (x2, y2), (x3, y3), (x4, y4)}
+Destination points (X', Y') = {(x1', y1'), (x2', y2'), (x3', y3'), (x4', y4')}
+```
+
+The goal is to find a 3x3 matrix H such that, when we apply the projective transform to each point (x, y) in the source image, it will be mapped to a new point (x', y') in the destination image:
+
+```
+| x' |   | h11 h12 h13 |   | x |
+| y' | = | h21 h22 h23 | * | y |
+| 1  |   | h31 h32 h33 |   | 1 |
+```
+
+Once the homography matrix H is calculated, we can use it to warp the source image onto the destination image, or vice versa, to align or overlay them correctly.
+
+Applications of projective transform in image processing include:
+
+1. Image stitching: To combine multiple images taken from different perspectives to create a panoramic image.
+2. Augmented reality: To superimpose virtual objects onto real-world scenes by aligning them correctly.
+3. Image rectification: To remove perspective distortion, making objects appear in a plane-parallel view.
+4. Camera calibration: To estimate camera parameters and correct image distortions in computer vision tasks.
+
+It's important to note that the projective transform assumes a pinhole camera model, which is a simplified model of real-world cameras that neglects certain optical distortions. For more accurate transformations, more complex camera models can be used, such as the radial distortion model in camera calibration.
+
+```{python}
+from skimage import transform
+from skimage.transform import resize
+
+h, w, _ = cropped_image.shape
+
+src = np.array([[0, 0], [0, w], [h, w], [h, 0]])
+dst = np.array([polygon_points[3], polygon_points[0], polygon_points[1], polygon_points[2]])
+
+tform3 = transform.ProjectiveTransform()
+tform3.estimate(src, dst)
+warped = transform.warp(cropped_image, tform3, output_shape=(w, h))
+# flipped = np.flipud(warped)
+
+final = resize(warped, (w, w),
+                    anti_aliasing=True)
+
+plt.figure(figsize=(10,10))
+plt.imshow(final)
+plt.axis("off")
+```
+
+Let's break down what the core part of the code does:
+
+1. `src = np.array([[0, 0], [0, w], [h, w], [h, 0]])`: This line creates a NumPy array `src` containing four 2D points. These points represent the coordinates of a rectangular region in the source image that you want to transform. The points are given in (row, column) format, and they define a rectangular region with corners at (0,0), (0,w), (h,w), and (h,0). The `w` and `h` variables likely represent the width and height of the source image, respectively.
+
+2. `dst = np.array([polygon_points[0], polygon_points[2], polygon_points[3], polygon_points[1]])`: This line creates another NumPy array `dst` containing four 2D points. These points are the corresponding destination coordinates where you want the points from `src` to be mapped after the transformation. The `polygon_points` array likely contains four 2D points representing the desired corners of the transformed region.
+
+3. `tform3 = transform.ProjectiveTransform()`: This line creates an instance of the `ProjectiveTransform` class from the scikit-image library. This class represents a projective transformation (perspective transform) that can be used to transform points or images.
+
+4. `tform3.estimate(src, dst)`: This line estimates the projective transformation based on the corresponding points defined in `src` and `dst`. It calculates the 3x3 homography matrix that maps the points in `src` to the points in `dst`, effectively determining the transformation required to warp the rectangular region defined by `src` to the desired shape represented by `dst`.
+
+5. `warped = transform.warp(cropped_image, tform3, output_shape=(w, h))`: This line applies the estimated projective transformation to the `cropped_image`. The `warp` function from scikit-image is used for this purpose. The `cropped_image` is the source image from which you previously extracted the region defined by `src`. The `output_shape=(w, h)` argument specifies the dimensions of the output (warped) image, which should be the same as the dimensions of the original region defined by `src`. The `tform3` transformation is applied to the `cropped_image`, resulting in the `warped` image.
+
+After this code executes, the `warped` image will be a transformed version of the original `cropped_image`, where the rectangular region defined by `src` is now warped to match the desired shape represented by the corresponding points in `dst`. 

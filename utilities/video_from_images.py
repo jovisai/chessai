@@ -22,15 +22,15 @@ def create_video_from_images(image_files, output_file, fps=24):
   video_writer.release()
 
 
-files = os.listdir('/home/leopard/development/jovis.ai/chessai/temp/output_frames_3_3/')
+files = os.listdir('/home/leopard/development/jovis.ai/chessai/temp/output_frames_4_1/')
 size = len(files)
 image_files = []
-for i in range(13657):
-   path = '/home/leopard/development/jovis.ai/chessai/temp/output_frames_3_3/frame_{0}.jpg'.format(i)
+for i in range(1645):
+   path = '/home/leopard/development/jovis.ai/chessai/temp/output_frames_4_1/frame_{0}.jpg'.format(i)
    if os.path.exists(path):
     image_files.append(path)
 
 print(len(image_files))
 if __name__ == "__main__":
-  output_file = "temp/video_3.avi"
+  output_file = "temp/video_5.avi"
   create_video_from_images(image_files, output_file)

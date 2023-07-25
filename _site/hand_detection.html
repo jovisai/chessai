@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Computer Vision Notebooks</title>
+<title>Hand Detection on Chess Board</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -93,8 +93,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -111,7 +109,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" rel="" target="" aria-current="page">
+    <a class="nav-link" href="./index.html" rel="" target="">
  <span class="menu-text">Computer Vision Notebooks</span></a>
   </li>  
 </ul>
@@ -125,7 +123,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Computer Vision Notebooks</li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./chess_board_segmentation.html">CV Notes</a></li><li class="breadcrumb-item"><a href="./hand_detection.html">Hand Detection on Chess Board</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -168,7 +166,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./hand_detection.html" class="sidebar-item-text sidebar-link">
+  <a href="./hand_detection.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Hand Detection on Chess Board</span></a>
   </div>
 </li>
@@ -210,7 +208,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Computer Vision Notebooks</h1>
+<h1 class="title">Hand Detection on Chess Board</h1>
 </div>
 
 
@@ -225,51 +223,67 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="data/IMG_4988.jpg" class="img-fluid figure-img"></p>
-<figcaption class="figure-caption">Muthukrishnan</figcaption>
-</figure>
-</div>
-<p>Hey there, fellow adventurers! Welcome to my corner of this research notebook. I’m Muthukrishnan, your friendly neighborhood software engineer.</p>
-<p>I thrive on curiosity and a thirst for knowledge, constantly seeking new experiences and learning opportunities. Whether it’s diving into the depths of a gripping novel or immersing myself in the vibrant world of coding, I find joy in expanding my horizons.</p>
-<p>As a tech enthusiast, I’m constantly amazed by the boundless possibilities it brings. From tinkering with gadgets to exploring the ever-evolving world of AI, I’m enthralled by the exciting intersection of humanity and innovation.</p>
-<p>If you ask me my favorite miracles, it would be the Euler’s Identity and the Butterfly curve.</p>
-<p><strong>Euler’s Identity</strong> <span class="math display">\[\begin{gather*}
-e^{i\pi }+1=0
-\end{gather*}\]</span></p>
-<p><strong>Butterfly curve</strong> <span class="math display">\[\begin{gather*}
-{\displaystyle x=\sin t\!\left(e^{\cos t}-2\cos 4t-\sin ^{5}\!{\Big (}{t \over 12}{\Big )}\right)}
-\end{gather*}\]</span></p>
-<p><span class="math display">\[\begin{gather*}
-{\displaystyle y=\cos t\!\left(e^{\cos t}-2\cos 4t-\sin ^{5}\!{\Big (}{t \over 12}{\Big )}\right)}
-\end{gather*}\]</span></p>
 <div class="cell" data-execution_count="1">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameterize the butterfly curve equation</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">2</span> <span class="op">*</span> np.pi, <span class="dv">1000</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.sin(t) <span class="op">*</span> (np.exp(np.cos(t)) <span class="op">-</span> <span class="dv">2</span> <span class="op">*</span> np.cos(<span class="dv">4</span> <span class="op">*</span> t) <span class="op">-</span> np.sin(t <span class="op">/</span> <span class="dv">12</span>) <span class="op">**</span> <span class="dv">5</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.cos(t) <span class="op">*</span> (np.exp(np.cos(t)) <span class="op">-</span> <span class="dv">2</span> <span class="op">*</span> np.cos(<span class="dv">4</span> <span class="op">*</span> t) <span class="op">-</span> np.sin(t <span class="op">/</span> <span class="dv">12</span>) <span class="op">**</span> <span class="dv">5</span>)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the butterfly curve</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>plt.plot(x, y, color<span class="op">=</span><span class="st">'red'</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Butterfly curve"</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">'equal'</span>)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the plot</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># load the image</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>image_path <span class="op">=</span> <span class="st">'data/frame_42_with_hand.jpg'</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>img <span class="op">=</span> cv2.imread(image_path)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">#converting from gbr to hsv color space</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>img_HSV <span class="op">=</span> cv2.cvtColor(img, cv2.COLOR_BGR2HSV)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#skin color range for hsv color space </span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>HSV_mask <span class="op">=</span> cv2.inRange(img_HSV, (<span class="dv">0</span>, <span class="dv">15</span>, <span class="dv">0</span>), (<span class="dv">17</span>,<span class="dv">170</span>,<span class="dv">255</span>)) </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>HSV_mask <span class="op">=</span> cv2.morphologyEx(HSV_mask, cv2.MORPH_OPEN, np.ones((<span class="dv">3</span>,<span class="dv">3</span>), np.uint8))</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#converting from gbr to YCbCr color space</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>img_YCrCb <span class="op">=</span> cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">#skin color range for hsv color space </span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>YCrCb_mask <span class="op">=</span> cv2.inRange(img_YCrCb, (<span class="dv">0</span>, <span class="dv">135</span>, <span class="dv">85</span>), (<span class="dv">255</span>,<span class="dv">180</span>,<span class="dv">135</span>)) </span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>YCrCb_mask <span class="op">=</span> cv2.morphologyEx(YCrCb_mask, cv2.MORPH_OPEN, np.ones((<span class="dv">3</span>,<span class="dv">3</span>), np.uint8))</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">#merge skin detection (YCbCr and hsv)</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>global_mask<span class="op">=</span>cv2.bitwise_and(YCrCb_mask,HSV_mask)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>global_mask<span class="op">=</span>cv2.medianBlur(global_mask,<span class="dv">3</span>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>global_mask <span class="op">=</span> cv2.morphologyEx(global_mask, cv2.MORPH_OPEN, np.ones((<span class="dv">4</span>,<span class="dv">4</span>), np.uint8))</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>HSV_result <span class="op">=</span> cv2.bitwise_not(HSV_mask)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>YCrCb_result <span class="op">=</span> cv2.bitwise_not(YCrCb_mask)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>global_result<span class="op">=</span>cv2.bitwise_not(global_mask)</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">9</span>,<span class="dv">9</span>))</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>w,h<span class="op">=</span>global_mask.shape</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>percent_skin <span class="op">=</span> (np.<span class="bu">sum</span>(global_mask <span class="op">!=</span> <span class="dv">0</span>)<span class="op">/</span>(w <span class="op">*</span> h)) <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">int</span>(percent_skin) <span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    plt.text(<span class="dv">100</span>, <span class="dv">100</span>, <span class="st">'Hand Detected!'</span>, <span class="bu">dict</span>(size<span class="op">=</span><span class="dv">30</span>), c<span class="op">=</span><span class="st">'r'</span>)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-display">
-<p><img src="index_files/figure-html/cell-2-output-1.png" width="569" height="431"></p>
+<p><img src="hand_detection_files/figure-html/cell-2-output-1.png" width="684" height="684"></p>
 </div>
 </div>
-<p>So, dear reader, join me on this thrilling journey as we navigate through the twists and turns of life. Together, let’s discover new passions, celebrate the extraordinary, and revel in the joy of being wonderfully unique.</p>
-<p>Fasten your seatbelts, embrace your sense of wonder, and let’s embark on an unforgettable adventure together!</p>
-<p>I also blog at muthu.co, you can read about the Euler’s formula <a href="https://muthu.co/deriving-the-famous-eulers-formula-through-taylor-series/">here</a></p>
+<p>The provided code performs skin color detection using two color spaces, HSV (Hue, Saturation, Value) and YCbCr (Luminance, Chrominance blue-difference, Chrominance red-difference). It combines the results from both color spaces to detect skin regions in an image.</p>
+<p>Here’s a step-by-step explanation of the code:</p>
+<ol type="1">
+<li><p><strong>Converting from BGR to HSV color space:</strong> The code starts by converting the input image <code>img</code> from the default BGR color space to the HSV color space using <code>cv2.cvtColor()</code>. HSV is a more suitable color space for skin detection due to its separation of color information into three components: Hue, Saturation, and Value.</p></li>
+<li><p><strong>HSV skin color range:</strong> A binary mask is created using <code>cv2.inRange()</code> to filter out pixels within a specific HSV range that correspond to skin color. The lower and upper bounds for skin color in HSV are defined as <code>(0, 15, 0)</code> and <code>(17, 170, 255)</code>, respectively. These values are set based on empirical observations and may need to be adjusted depending on the specific application and lighting conditions.</p></li>
+<li><p><strong>Morphological opening on HSV mask:</strong> <code>cv2.morphologyEx()</code> is applied with the operation <code>cv2.MORPH_OPEN</code> to perform morphological opening on the HSV mask. Morphological opening is a combination of erosion followed by dilation and is used to remove small noise regions or small gaps in the detected skin areas. A small 3x3 square kernel is used for the operation.</p></li>
+<li><p><strong>Converting from BGR to YCbCr color space:</strong> The code then converts the input image <code>img</code> from BGR to the YCbCr color space using <code>cv2.cvtColor()</code>. YCbCr separates the image into its luminance (Y) and chrominance (Cb and Cr) components.</p></li>
+<li><p><strong>YCbCr skin color range:</strong> A binary mask is created using <code>cv2.inRange()</code> to filter out pixels within a specific YCbCr range that correspond to skin color. The lower and upper bounds for skin color in YCbCr are defined as <code>(0, 135, 85)</code> and <code>(255, 180, 135)</code>, respectively. As with the HSV range, these values may require tuning based on specific conditions.</p></li>
+<li><p><strong>Morphological opening on YCbCr mask:</strong> Similar to the HSV mask, a morphological opening operation is applied to the YCbCr mask using <code>cv2.morphologyEx()</code> with a 3x3 square kernel.</p></li>
+<li><p><strong>Merging the skin detections from both color spaces:</strong> The two binary masks obtained from HSV and YCbCr are combined using a bitwise AND operation (<code>cv2.bitwise_and()</code>) to obtain the merged skin detection mask named <code>global_mask</code>. This step helps to include regions detected as skin in both color spaces.</p></li>
+<li><p><strong>Median blur on the merged mask:</strong> A median blur operation with a kernel size of 3 is applied to <code>global_mask</code> using <code>cv2.medianBlur()</code>. This helps to further smooth out the skin regions and remove small remaining noise.</p></li>
+<li><p><strong>Final morphological opening on the merged mask:</strong> A final morphological opening operation is performed on <code>global_mask</code> using a larger 4x4 square kernel to clean up any remaining small areas of non-skin pixels.</p></li>
+<li><p><strong>Generating the final results:</strong> The results for HSV, YCbCr, and the merged skin detection are obtained by inverting their respective masks using <code>cv2.bitwise_not()</code> to create binary images where skin pixels are represented by white and non-skin pixels by black. The results are stored in <code>HSV_result</code>, <code>YCrCb_result</code>, and <code>global_result</code>, respectively.</p></li>
+</ol>
+<p>After running this code, you should have three binary images: <code>HSV_result</code>, <code>YCrCb_result</code>, and <code>global_result</code>, where white pixels represent detected skin regions. The <code>global_result</code> should be the merged skin detection combining the information from both HSV and YCbCr color spaces.</p>
 
 
 

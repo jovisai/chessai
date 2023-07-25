@@ -1,0 +1,85 @@
+---
+title: "Hand Detection on Chess Board"
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import cv2
+
+# load the image
+image_path = 'data/frame_42_with_hand.jpg'
+img = cv2.imread(image_path)
+#converting from gbr to hsv color space
+img_HSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+#skin color range for hsv color space 
+HSV_mask = cv2.inRange(img_HSV, (0, 15, 0), (17,170,255)) 
+HSV_mask = cv2.morphologyEx(HSV_mask, cv2.MORPH_OPEN, np.ones((3,3), np.uint8))
+
+#converting from gbr to YCbCr color space
+img_YCrCb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
+#skin color range for hsv color space 
+YCrCb_mask = cv2.inRange(img_YCrCb, (0, 135, 85), (255,180,135)) 
+YCrCb_mask = cv2.morphologyEx(YCrCb_mask, cv2.MORPH_OPEN, np.ones((3,3), np.uint8))
+
+#merge skin detection (YCbCr and hsv)
+global_mask=cv2.bitwise_and(YCrCb_mask,HSV_mask)
+global_mask=cv2.medianBlur(global_mask,3)
+global_mask = cv2.morphologyEx(global_mask, cv2.MORPH_OPEN, np.ones((4,4), np.uint8))
+
+
+HSV_result = cv2.bitwise_not(HSV_mask)
+YCrCb_result = cv2.bitwise_not(YCrCb_mask)
+global_result=cv2.bitwise_not(global_mask)
+
+plt.figure(figsize=(9,9))
+plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+plt.axis("off")
+w,h=global_mask.shape
+percent_skin = (np.sum(global_mask != 0)/(w * h)) * 100
+if int(percent_skin) > 1:
+    plt.text(100, 100, 'Hand Detected!', dict(size=30), c='r')
+plt.show()
+
+```
+
+The provided code performs skin color detection using two color spaces, HSV (Hue, Saturation, Value) and YCbCr (Luminance, Chrominance blue-difference, Chrominance red-difference). It combines the results from both color spaces to detect skin regions in an image.
+
+Here's a step-by-step explanation of the code:
+
+1. **Converting from BGR to HSV color space:**
+   The code starts by converting the input image `img` from the default BGR color space to the HSV color space using `cv2.cvtColor()`. HSV is a more suitable color space for skin detection due to its separation of color information into three components: Hue, Saturation, and Value.
+
+2. **HSV skin color range:**
+   A binary mask is created using `cv2.inRange()` to filter out pixels within a specific HSV range that correspond to skin color. The lower and upper bounds for skin color in HSV are defined as `(0, 15, 0)` and `(17, 170, 255)`, respectively. These values are set based on empirical observations and may need to be adjusted depending on the specific application and lighting conditions.
+
+3. **Morphological opening on HSV mask:**
+   `cv2.morphologyEx()` is applied with the operation `cv2.MORPH_OPEN` to perform morphological opening on the HSV mask. Morphological opening is a combination of erosion followed by dilation and is used to remove small noise regions or small gaps in the detected skin areas. A small 3x3 square kernel is used for the operation.
+
+4. **Converting from BGR to YCbCr color space:**
+   The code then converts the input image `img` from BGR to the YCbCr color space using `cv2.cvtColor()`. YCbCr separates the image into its luminance (Y) and chrominance (Cb and Cr) components.
+
+5. **YCbCr skin color range:**
+   A binary mask is created using `cv2.inRange()` to filter out pixels within a specific YCbCr range that correspond to skin color. The lower and upper bounds for skin color in YCbCr are defined as `(0, 135, 85)` and `(255, 180, 135)`, respectively. As with the HSV range, these values may require tuning based on specific conditions.
+
+6. **Morphological opening on YCbCr mask:**
+   Similar to the HSV mask, a morphological opening operation is applied to the YCbCr mask using `cv2.morphologyEx()` with a 3x3 square kernel.
+
+7. **Merging the skin detections from both color spaces:**
+   The two binary masks obtained from HSV and YCbCr are combined using a bitwise AND operation (`cv2.bitwise_and()`) to obtain the merged skin detection mask named `global_mask`. This step helps to include regions detected as skin in both color spaces.
+
+8. **Median blur on the merged mask:**
+   A median blur operation with a kernel size of 3 is applied to `global_mask` using `cv2.medianBlur()`. This helps to further smooth out the skin regions and remove small remaining noise.
+
+9. **Final morphological opening on the merged mask:**
+   A final morphological opening operation is performed on `global_mask` using a larger 4x4 square kernel to clean up any remaining small areas of non-skin pixels.
+
+10. **Generating the final results:**
+   The results for HSV, YCbCr, and the merged skin detection are obtained by inverting their respective masks using `cv2.bitwise_not()` to create binary images where skin pixels are represented by white and non-skin pixels by black. The results are stored in `HSV_result`, `YCrCb_result`, and `global_result`, respectively.
+
+After running this code, you should have three binary images: `HSV_result`, `YCrCb_result`, and `global_result`, where white pixels represent detected skin regions. The `global_result` should be the merged skin detection combining the information from both HSV and YCbCr color spaces.

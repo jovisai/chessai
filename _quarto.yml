@@ -13,6 +13,7 @@ website:
         contents:
           - chess_board_segmentation.qmd
           - chess_board_segmentation_with_flat_board.qmd
+          - hand_detection.qmd
       - section: "Utilities"
         contents:
           - utilities/video_to_images.qmd

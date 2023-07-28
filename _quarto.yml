@@ -5,6 +5,8 @@ website:
   navbar:
     left:
       - href: index.qmd
+  site-url: 'https://vision.jovis.ai'
+  site-path: '/'
   sidebar:
     style: "floating"
     search: true
